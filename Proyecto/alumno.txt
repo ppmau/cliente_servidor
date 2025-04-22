@@ -1,0 +1,4 @@
+Id,Nombre,Apellido,Semestre,Carrera
+1,Mauricio,Perez,10,Computacion
+2,Jonathan,Marin,9,Aeroespacial
+3,Diego,Chavez,3,Electrica Electronica

@@ -7,6 +7,7 @@
 
 // Prototipo
 void analizadorDeSintaxis(char *consulta[], int numTokens);
+void funcionSelect();
 
 int main() {
     char input[MAX_LENGTH];
@@ -31,6 +32,8 @@ int main() {
     }
 
     analizadorDeSintaxis(tokens, count);
+    
+
 
     return 0;
 }
@@ -48,6 +51,8 @@ void analizadorDeSintaxis(char *consulta[], int numTokens) {
             if (numTokens > 2 && strcasecmp(consulta[2], "FROM") == 0) {
                 //Validando que el token en la posiciòn 3 sea Alumno (ùnico requerimiento para el proyecto)
                 if (numTokens > 3 && strcmp(consulta[3], "Alumno") == 0) {
+                    //Se manda llamar a la funcion que realiza el select cuando la sintaxis es correcta y la tabla existe
+                    funcionSelect();
                 } else {
                     printf("Sintaxis incorrecta. No existe la tabla seleccionada\n");
                 }
@@ -137,4 +142,24 @@ void analizadorDeSintaxis(char *consulta[], int numTokens) {
         //Si no coincide con ninguna de las palabras reservadas para la base de datos, envìa este mensaje de error
         printf("Sintaxis incorrecta. No se encontro la instruccion indicada\n");
     }
+}
+
+
+void funcionSelect(){
+    FILE *archivo = fopen("alumno.txt", "r");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+    }
+    else{
+        printf("\n");
+        char linea[100];
+        int contadorLinea;
+        contadorLinea = 0;
+        while (fgets(linea, sizeof(linea), archivo)) {
+            printf("%s", linea);
+            contadorLinea++;
+        }
+        fclose(archivo);
+    }
+
 }
