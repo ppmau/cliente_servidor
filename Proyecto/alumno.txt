@@ -2,3 +2,8 @@ Id,Nombre,Apellido,Semestre,Carrera
 1,Mauricio,Perez,10,Computacion
 2,Jonathan,Marin,9,Aeroespacial
 3,Diego,Chavez,3,Electrica Electronica
+4,Josue,Becerril,2,Petrolera
+5,Josue,Becerril,2,Petrolera
+6,Josue,Becerril,2,Petrolera
+7,Josue,Becerril,2,Petrolera
+8,Josue,Becerril,2,Petrolera

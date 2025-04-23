@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 #define MAX_TOKENS 10
@@ -8,6 +9,7 @@
 // Prototipo
 void analizadorDeSintaxis(char *consulta[], int numTokens);
 void funcionSelect();
+void funcionInsert(char *values);
 
 int main() {
     char input[MAX_LENGTH];
@@ -72,7 +74,7 @@ void analizadorDeSintaxis(char *consulta[], int numTokens) {
             if(numTokens > 2 && strcmp(consulta[2], "Alumno") == 0){
                 //Validando que el token en la posicion 3, sea VALUES, ya sea mayuscula o minuscula
                 if(numTokens > 3 && strcasecmp(consulta[3], "VALUES") == 0){
-                    printf("Haciendo insert con los valores %s", consulta[4]);
+                    funcionInsert(consulta[4]);
                 }
                 else{
                     //Si el token en la posicion 3 no es VALUES, se devuelve un mensaje de error
@@ -160,6 +162,40 @@ void funcionSelect(){
             contadorLinea++;
         }
         fclose(archivo);
+    }
+}
+
+void funcionInsert(char *values){
+    FILE *archivo = fopen("alumno.txt", "a+");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+    }
+    else{  
+        //Verifica que los campos a ingresar se encuentren contenidos dentro de parentesis
+        if (values[0] == '(' && values[strlen(values) - 1] == ')') { 
+            int nuevoLen = strlen(values)-2;
+            //Nuevo tamanio quitando el valor en 0 y los dos parentesis
+            char valuesSinParentesis[nuevoLen]; 
+            for (int i = 1; i <= strlen(values) - 2; i++){
+                valuesSinParentesis[i-1] = values[i];   
+            }
+           
+            valuesSinParentesis[nuevoLen] = '\0';  //Agregando caracter que indica el final del char
+            char linea[256];            // Línea temporal
+            char ultimaLinea[256] = ""; // Donde guardaremos la última
+            while (fgets(linea, sizeof(linea), archivo) != NULL) { //Determinando el numero de campos para obtener
+                strcpy(ultimaLinea, linea);
+            }
+            printf("Ultima linea %s", ultimaLinea);
+            char *token = strtok(ultimaLinea, ",");
+            int id = atoi(token);
+            printf("Ultimo id: %d", id);
+
+    fclose(archivo);
+
+        } else {
+            printf("Error de sintaxis. Incorrecto uso de parentesis\n");
+        }
     }
 
 }
