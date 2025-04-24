@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define MAX_TOKENS 10
 #define MAX_LENGTH 100
@@ -173,23 +174,36 @@ void funcionInsert(char *values){
     else{  
         //Verifica que los campos a ingresar se encuentren contenidos dentro de parentesis
         if (values[0] == '(' && values[strlen(values) - 1] == ')') { 
-            int nuevoLen = strlen(values)-2;
-            //Nuevo tamanio quitando el valor en 0 y los dos parentesis
-            char valuesSinParentesis[nuevoLen]; 
-            for (int i = 1; i <= strlen(values) - 2; i++){
+
+            char linea[256];            // Variable que se utilizara para leer las lineas del archivo
+            char ultimaLinea[256] = ""; // Variable donde se guardara la ultima linea obtenida para realizar para obtener el ID
+            int nuevoLen = strlen(values)-2; //Valor entero correspondiente a la nueva longitud de los valores a insertar, eliminando 2 parentesis
+            char valuesSinParentesis[nuevoLen]; //Variable que guardara la nueva cadena
+
+            for (int i = 1; i <= strlen(values) - 2; i++){//Quitando parentesis del string para insertar
                 valuesSinParentesis[i-1] = values[i];   
             }
-           
+
             valuesSinParentesis[nuevoLen] = '\0';  //Agregando caracter que indica el final del char
-            char linea[256];            // Línea temporal
-            char ultimaLinea[256] = ""; // Donde guardaremos la última
-            while (fgets(linea, sizeof(linea), archivo) != NULL) { //Determinando el numero de campos para obtener
+            while (fgets(linea, sizeof(linea), archivo) != NULL) { //Determinando la ultima linea para rastrear el ultimo ID 
                 strcpy(ultimaLinea, linea);
             }
-            printf("Ultima linea %s", ultimaLinea);
-            char *token = strtok(ultimaLinea, ",");
-            int id = atoi(token);
-            printf("Ultimo id: %d", id);
+            char *token = strtok(ultimaLinea, ","); //Variable que contiene al primer token de una cadena separada por comas (ID)
+            int id = atoi(token) + 1; //Parseando valor de id y sumando 1 (el autoincremental)
+            int lenId = snprintf(NULL, 0, "%d", id);  // Longitud del nuevo ID que previene valores de mas de un digito
+            char idChar[lenId + 1]; //Variable para guardar el nuevo id mas un espacio extra para indicar el fin de la cadena
+            sprintf(idChar, "%d", id); //Se guarda en idChar el valor entero de id
+
+            
+            int totalLen = lenId + 1 + strlen(valuesSinParentesis + 1); // Se crea espacio para ID, coma, values y \0 para la nueva cadena con el nuevo ID concatenado
+            char lineaInsert[totalLen]; // +1 para \0 final
+            strcpy(lineaInsert, idChar); //Se copia lo que contiene idChar
+            lineaInsert[lenId] = ',';  //Se agrega la comma
+            lineaInsert[lenId + 1] = '\0'; //Se indica el final temporal de la cadena
+            strcat(lineaInsert, valuesSinParentesis); //Se agrega la cadena recibida al ID nuevo con su coma
+
+            fprintf(archivo, "%s\n", lineaInsert); //Se inserta el nuevo registro
+
 
     fclose(archivo);
 

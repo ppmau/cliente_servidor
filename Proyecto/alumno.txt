@@ -7,3 +7,5 @@ Id,Nombre,Apellido,Semestre,Carrera
 6,Josue,Becerril,2,Petrolera
 7,Josue,Becerril,2,Petrolera
 8,Josue,Becerril,2,Petrolera
+9,Marco,Delgado,10,Computacion
+10,Marco,Delgado,10,Computacion
