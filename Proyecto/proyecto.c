@@ -11,6 +11,7 @@
 void analizadorDeSintaxis(char *consulta[], int numTokens);
 void funcionSelect();
 void funcionInsert(char *values);
+void funcionUpdate(char *campo, char *id);
 
 int main() {
     char input[MAX_LENGTH];
@@ -92,14 +93,13 @@ void analizadorDeSintaxis(char *consulta[], int numTokens) {
         }
 
     } else if (strcasecmp(consulta[0], "UPDATE") == 0) {
-        printf("Haciendo un UPDATE\n");
         if(numTokens > 1 && strcmp(consulta[1], "Alumno") == 0){
             if (numTokens > 2 && strcasecmp(consulta[2], "SET") == 0){
                 //Solo verifica que exista un elemento despues del set, la verificacion del campo a insertar la hara despues
                 if(numTokens > 3){
                     if (numTokens > 4 && strcasecmp(consulta[4], "WHERE") == 0){
                         if(numTokens > 5){
-                            printf("Haciendo update a la tabla %s los valores de %s en donde el id sea %s", consulta[1],consulta[3], consulta[5]);
+                            funcionUpdate(consulta[3],consulta[5]);
                         } 
                     }
                     else{
@@ -202,8 +202,7 @@ void funcionInsert(char *values){
             lineaInsert[lenId + 1] = '\0'; //Se indica el final temporal de la cadena
             strcat(lineaInsert, valuesSinParentesis); //Se agrega la cadena recibida al ID nuevo con su coma
 
-            fprintf(archivo, "%s\n", lineaInsert); //Se inserta el nuevo registro
-
+            fprintf(archivo, "%s\n", lineaInsert); //Se inserta el nuevo registro 
 
     fclose(archivo);
 
@@ -211,5 +210,134 @@ void funcionInsert(char *values){
             printf("Error de sintaxis. Incorrecto uso de parentesis\n");
         }
     }
+
+}
+
+
+void funcionUpdate(char *campo, char *id){
+    FILE *archivo = fopen("alumno.txt", "r");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+    }
+    else{
+        //Definiendo variables auxiliares para descomoner el campo en que se insertara, el valor y el id
+        char *tokenID;
+        char *charID;
+        char *charCampo;
+        char *charValorCampo;
+        char copiaID[10];
+        char copiaCampo[50];
+        int contadorTokens = 0;
+
+        strcpy(copiaID, id);
+        char *rest = copiaID;
+        strcpy(copiaCampo, campo);
+        char *restCampo = copiaCampo;
+
+        while ((campo = strtok_r (restCampo,"=", &restCampo))){
+            if (contadorTokens == 0){
+                charCampo = campo;
+                contadorTokens++;
+            }
+            else{
+                charValorCampo = campo;
+            }
+        }
+        printf("\nEl campo a cambiar es: %s el valor es: %s", charCampo, charValorCampo);
+
+        while ((tokenID = strtok_r(rest, "=", &rest))) {
+                charID = tokenID;
+            }
+        printf("\nValor de ID a cambiar: %s" ,charID);
+
+        //Definiendo variables para recorrer y guardar el contenido del archivo para reescribir con el cambio posteriormente
+        char linea[256];
+        char bufferAntes[4096] = "";
+        char bufferDespues[4096] = "";
+        char lineaEncontrada[256]  = {0};
+        bool encontrado = false;
+
+
+        while (fgets(linea, sizeof(linea), archivo)) {
+            char copiaLinea[256];
+            strcpy(copiaLinea, linea); // No alterar la original
+            
+            char *token = strtok(copiaLinea, ",");
+            
+            if (strcmp(token, charID) == 0 && !encontrado) {
+                strcpy(lineaEncontrada,linea);
+                encontrado = true;
+            } 
+            else{
+                if (!encontrado){
+                    strcat(bufferAntes, linea);
+                } 
+                else{
+                    strcat(bufferDespues, linea);
+                }
+            }
+        }
+        //Habiendo recorrido el archivo en busqueda de un campo ID igual al ingresado
+        char nuevaLinea[150] = {0};
+        char *restLineaEncontrada;
+        char *tokenLinea;
+        int contadorCampo = 0;
+
+
+        if(encontrado){
+            if (strcmp(charCampo, "Nombre") == 0){
+                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
+                while (tokenLinea != NULL) {
+                    if (contadorCampo == 1){
+                        strcat(nuevaLinea,charValorCampo);
+                        strcat(nuevaLinea, ","); 
+                        contadorCampo++;
+                    }
+                    else{
+                        if (contadorCampo == 4){
+                            strcat(nuevaLinea,tokenLinea);
+                        }
+                        else{
+                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea, ",");
+                            contadorCampo++; 
+                        }
+                    }
+                    
+                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada);
+                }
+                fclose(archivo);
+                FILE *archivoNuevo = fopen("alumno.txt", "w");
+                if (archivoNuevo == NULL) {
+                    printf("Error al abrir el archivo\n");
+                }
+                else{
+                    fputs(bufferAntes, archivoNuevo);
+                    fputs(nuevaLinea, archivoNuevo);
+                    fputs(bufferDespues, archivoNuevo);
+                }
+                fclose(archivoNuevo);
+
+            }
+            else if(strcmp(charCampo, "Apellido") == 0){
+                printf("Coincidencia en %s", charCampo);
+            }
+            else if(strcmp(charCampo, "Semestre") == 0 ){
+                printf("Coincidencia en %s", charCampo);
+            }
+            else if(strcmp(charCampo, "Carrera") == 0){
+                printf("Coincidencia en %s", charCampo);
+            }    
+            else{
+                printf("No hay coincidencia en el campo a actualizar");
+            }
+
+        }
+        else{
+            printf("\nNo hay coincidencias con el id: %s proporcionado", charID);
+        }
+    
+    }
+
 
 }
