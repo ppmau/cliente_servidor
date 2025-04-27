@@ -12,6 +12,7 @@ void analizadorDeSintaxis(char *consulta[], int numTokens);
 void funcionSelect();
 void funcionInsert(char *values);
 void funcionUpdate(char *campo, char *id);
+void funcionDelete(char *cadenaId);
 
 int main() {
     char input[MAX_LENGTH];
@@ -125,6 +126,8 @@ void analizadorDeSintaxis(char *consulta[], int numTokens) {
                 if (numTokens > 3 && strcasecmp(consulta[3], "WHERE") == 0){
                     if(numTokens > 4){
                         printf("Borrando el valor %s en la tabla %s", consulta[4], consulta[2]);
+                        funcionDelete(consulta[4]);
+                        printf("Entrando...");
                     }
                     else{
                         printf("Error. No se indico el valor a modificar");
@@ -210,7 +213,6 @@ void funcionInsert(char *values){
             printf("Error de sintaxis. Incorrecto uso de parentesis\n");
         }
     }
-
 }
 
 
@@ -321,12 +323,99 @@ void funcionUpdate(char *campo, char *id){
             }
             else if(strcmp(charCampo, "Apellido") == 0){
                 printf("Coincidencia en %s", charCampo);
+                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
+                while (tokenLinea != NULL) {
+                    if (contadorCampo == 2){
+                        strcat(nuevaLinea,charValorCampo);
+                        strcat(nuevaLinea, ","); 
+                        contadorCampo++;
+                    }
+                    else{
+                        if (contadorCampo == 4){
+                            strcat(nuevaLinea,tokenLinea);
+                        }
+                        else{
+                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea, ",");
+                            contadorCampo++; 
+                        }
+                    }
+                    
+                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada);
+                }
+                fclose(archivo);
+                FILE *archivoNuevo = fopen("alumno.txt", "w");
+                if (archivoNuevo == NULL) {
+                    printf("Error al abrir el archivo\n");
+                }
+                else{
+                    fputs(bufferAntes, archivoNuevo);
+                    fputs(nuevaLinea, archivoNuevo);
+                    fputs(bufferDespues, archivoNuevo);
+                }
+                fclose(archivoNuevo);
             }
             else if(strcmp(charCampo, "Semestre") == 0 ){
                 printf("Coincidencia en %s", charCampo);
+                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
+                while (tokenLinea != NULL) {
+                    if (contadorCampo == 3){
+                        strcat(nuevaLinea,charValorCampo);
+                        strcat(nuevaLinea, ","); 
+                        contadorCampo++;
+                    }
+                    else{
+                        if (contadorCampo == 4){
+                            strcat(nuevaLinea,tokenLinea);
+                        }
+                        else{
+                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea, ",");
+                            contadorCampo++; 
+                        }
+                    }
+                    
+                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada);
+                }
+                fclose(archivo);
+                FILE *archivoNuevo = fopen("alumno.txt", "w");
+                if (archivoNuevo == NULL) {
+                    printf("Error al abrir el archivo\n");
+                }
+                else{
+                    fputs(bufferAntes, archivoNuevo);
+                    fputs(nuevaLinea, archivoNuevo);
+                    fputs(bufferDespues, archivoNuevo);
+                }
+                fclose(archivoNuevo);
             }
             else if(strcmp(charCampo, "Carrera") == 0){
                 printf("Coincidencia en %s", charCampo);
+                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
+                while (tokenLinea != NULL) {
+                    if (contadorCampo == 4){
+                        strcat(nuevaLinea,charValorCampo);
+                        strcat(nuevaLinea,"\n");
+                    }
+                    else{
+                        strcat(nuevaLinea,tokenLinea);
+                        strcat(nuevaLinea, ",");
+                        contadorCampo++; 
+                    }
+                    
+                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada);
+                }
+                fclose(archivo);
+                FILE *archivoNuevo = fopen("alumno.txt", "w");
+                if (archivoNuevo == NULL) {
+                    printf("Error al abrir el archivo\n");
+                }
+                else{
+                    fputs(bufferAntes, archivoNuevo);
+                    fputs(nuevaLinea, archivoNuevo);
+                    fputs(bufferDespues, archivoNuevo);
+                }
+                fclose(archivoNuevo);
             }    
             else{
                 printf("No hay coincidencia en el campo a actualizar");
@@ -338,6 +427,60 @@ void funcionUpdate(char *campo, char *id){
         }
     
     }
-
-
 }
+
+
+void funcionDelete(char *cadenaId){
+    printf("Entro");
+    char linea[256];
+    char buffer[4096] = "";
+    char lineaEncontrada[256]  = {0};
+    bool encontrado = false;
+    char *charID;
+    char *tokenID;
+    char copiaCadenaId[100];
+
+    strcpy(copiaCadenaId, cadenaId); 
+    char *restCadenaId = copiaCadenaId;
+
+
+    while ((tokenID = strtok_r(restCadenaId, "=", &restCadenaId))) {
+        charID = tokenID;
+    }
+
+    FILE *archivo = fopen("alumno.txt", "r");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+    }
+    else{
+
+        while (fgets(linea, sizeof(linea), archivo)) {
+            char copiaLinea[256];
+            strcpy(copiaLinea, linea); // No alterar la original    
+            char *token = strtok(copiaLinea, ",");
+            //printf("token: %s charID: %s", token, charID);
+            if (strcmp(token, charID) != 0) {
+                strcat(buffer,linea);
+                encontrado = true;
+            } 
+            
+        }
+        printf("El nuevo contenido del archivo es: %s", buffer);
+    }
+
+    fclose(archivo);
+
+    FILE *archivoNuevo = fopen("alumno.txt", "w");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo\n");
+    }
+    else{
+        fputs(buffer, archivoNuevo);    
+    }
+    
+
+
+    
+}
+
+
