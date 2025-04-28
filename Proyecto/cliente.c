@@ -3,71 +3,92 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
+/* Prototipos de funciones */
+int crear_conexion(const char *ip_servidor);
+void manejar_error(const char *mensaje, int cerrar_socket, int sock);
+
 int main(int argc, char const *argv[]) {
-    int sock = 0;
-    struct sockaddr_in serv_addr;
-    char buffer[BUFFER_SIZE] = {0};
-    
-    // Verificar que se proporcionó la IP del servidor
     if (argc != 2) {
         printf("Uso: %s <IP del servidor>\n", argv[0]);
         return -1;
     }
 
-    // Crear el socket del cliente
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\nError al crear socket \n");
-        return -1;
-    }
-    
-    // Configurar la estructura de dirección del servidor
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    
-    // Convertir dirección IP de texto a binario
-    if (inet_pton(AF_INET, argv[1], &serv_addr.sin_addr) <= 0) {
-        printf("\nDirección inválida / Dirección no soportada \n");
-        return -1;
-    }
-    
-    // Conectar al servidor
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        printf("\nConexión fallida \n");
-        return -1;
-    }
-    
-    printf("Conectado al servidor %s\n", argv[1]);
-    
-    // Comunicación con el servidor
+    char buffer[BUFFER_SIZE] = {0};
+    const char *ip_servidor = argv[1];
+
     while(1) {
-        printf("Escribe un mensaje (o 'exit' para salir): ");
-        fgets(buffer, BUFFER_SIZE, stdin);
-        
-        // Eliminar el salto de línea del final
-        buffer[strcspn(buffer, "\n")] = '\0';
-        
-        // Salir si el usuario escribe 'exit'
-        if (strcmp(buffer, "exit") == 0) {
+        if (fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
+            manejar_error("Error leyendo entrada", 0, -1);
             break;
         }
+
+        size_t msg_len = strcspn(buffer, "\n");
+        buffer[msg_len] = '\0';
         
-        // Enviar mensaje al servidor
-        send(sock, buffer, strlen(buffer), 0);
-        
-        // Limpiar el buffer
+        if (strcmp(buffer, "SALIR") == 0) {
+            break;
+        }
+
+        int sock = crear_conexion(ip_servidor);
+
+        ssize_t bytes_sent = send(sock, buffer, msg_len + 1, 0);
+        if (bytes_sent <= 0) {
+            manejar_error("Error enviando mensaje", 1, sock);
+            continue;
+        }
+
         memset(buffer, 0, BUFFER_SIZE);
-        
-        // Recibir respuesta del servidor
-        int valread = read(sock, buffer, BUFFER_SIZE);
-        printf("Respuesta del servidor: %s\n", buffer);
+        int valread = read(sock, buffer, BUFFER_SIZE - 1);
+        if (valread <= 0) {
+            if (valread == 0) {
+                printf("Servidor cerró la conexión\n");
+            } else {
+                manejar_error("Error leyendo respuesta", 1, sock);
+            }
+        } else {
+            buffer[valread] = '\0';
+            printf("%s\n", buffer);
+        }
+
+        close(sock);
     }
     
-    // Cerrar socket
-    close(sock);
-    
     return 0;
+}
+
+int crear_conexion(const char *ip_servidor) {
+    int sock = 0;
+    struct sockaddr_in serv_addr;
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        manejar_error("Error al crear socket", 0, -1);
+        return -1;
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+
+    if (inet_pton(AF_INET, ip_servidor, &serv_addr.sin_addr) <= 0) {
+        manejar_error("Dirección inválida", 1, sock);
+        return -1;
+    }
+
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        manejar_error("Conexión fallida", 1, sock);
+        return -1;
+    }
+
+    return sock;
+}
+
+void manejar_error(const char *mensaje, int cerrar_socket, int sock) {
+    perror(mensaje);
+    if (cerrar_socket && sock >= 0) {
+        close(sock);
+    }
 }
