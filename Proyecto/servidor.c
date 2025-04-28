@@ -13,7 +13,7 @@
 
 int incializadorServidor();
 void manejadorSQL(char *input, char *bufferRespuesta);
-char* analizadorDeSintaxis(char *consulta[], int numTokens, char *bufferRespuesta);
+void analizadorDeSintaxis(char *consulta[], int numTokens, char *bufferRespuesta);
 void funcionSelect(char *bufferRespuesta);
 void funcionInsert(char *values, char *bufferRespuesta);
 void funcionUpdate(char *campo, char *id, char *bufferRespuesta);
@@ -125,7 +125,7 @@ void manejadorSQL(char *input, char *bufferRespuesta) {
 
 }
 
-char* analizadorDeSintaxis(char *consulta[], int numTokens, char *bufferRespuesta) {
+void analizadorDeSintaxis(char *consulta[], int numTokens, char *bufferRespuesta) {
     if (numTokens == 0) {
         strcpy(bufferRespuesta,"Error. Instruccion no reconocida");
     }
