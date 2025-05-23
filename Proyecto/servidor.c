@@ -50,7 +50,7 @@ int main(){
         //char *response = "Hola desde el servidor!";
 
         send(descriptor_cliente, bufferRespuesta, strlen(bufferRespuesta), 0);
-        printf("Respuesta enviada: %s\n", bufferRespuesta);
+        //printf("Respuesta enviada: %s\n", bufferRespuesta);
 
         // Cerrar sockets
         close(descriptor_cliente);
@@ -291,7 +291,7 @@ void funcionInsert(char *values, char *bufferRespuesta){
     fclose(archivo);
 
         } else {
-            strcpy(bufferRespuesta,"Error de sintaxis. Incorrecto uso de parentesis");
+            strcpy(bufferRespuesta,"Error de sintaxis. Incorrecto uso de parentesis\n");
         }
     }
 }
@@ -317,7 +317,7 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
         strcpy(copiaCampo, campo);
         char *restCampo = copiaCampo;
 
-        while ((campo = strtok_r (restCampo,"=", &restCampo))){
+        while ((campo = strtok_r (restCampo,"=", &restCampo))){ //Asigna el campo que se contiene en la primer posiciòn y el nuevo valor
             if (contadorTokens == 0){
                 charCampo = campo;
                 contadorTokens++;
@@ -327,7 +327,7 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
             }
         }
 
-        while ((tokenID = strtok_r(rest, "=", &rest))) {
+        while ((tokenID = strtok_r(rest, "=", &rest))) { //recorre el id hasta el final del token, posiciòn en donde se encuentra el valor
                 charID = tokenID;
             }
 
@@ -339,53 +339,53 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
         bool encontrado = false;
 
 
-        while (fgets(linea, sizeof(linea), archivo)) {
+        while (fgets(linea, sizeof(linea), archivo)) { //Recorre el archivo en busca de una coincidencia con el ID recibido
             char copiaLinea[256];
             strcpy(copiaLinea, linea); // No alterar la original
             
             char *token = strtok(copiaLinea, ",");
             
-            if (strcmp(token, charID) == 0 && !encontrado) {
+            if (strcmp(token, charID) == 0 && !encontrado) { //Almacena la linea encontrada en donde el ID coincide
                 strcpy(lineaEncontrada,linea);
                 encontrado = true;
             } 
             else{
-                if (!encontrado){
+                if (!encontrado){ //Si no ha encontrado una coinicdencia, almacena el contenido en la variable bufferAntes
                     strcat(bufferAntes, linea);
                 } 
                 else{
-                    strcat(bufferDespues, linea);
+                    strcat(bufferDespues, linea); //Si encontrò una coincidencia, almacena el contenido restane en la variable bufferDespues
                 }
             }
         }
-        //Habiendo recorrido el archivo en busqueda de un campo ID igual al ingresado
+        //Una vez recorrido el archivo en busqueda de un campo ID igual al ingresado, se modifica la linea encontrada
         char nuevaLinea[150] = {0};
         char *restLineaEncontrada;
         char *tokenLinea;
         int contadorCampo = 0;
 
 
-        if(encontrado){
-            if (strcmp(charCampo, "Nombre") == 0){
-                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
-                while (tokenLinea != NULL) {
-                    if (contadorCampo == 1){
-                        strcat(nuevaLinea,charValorCampo);
-                        strcat(nuevaLinea, ","); 
+        if(encontrado){ //Si se encontraron coincidencias con el ID
+            if (strcmp(charCampo, "Nombre") == 0){ //Caso en el que se desea modificar el campo nombre
+                tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada); //Descompone la linea encontrada en tokens separados por ,
+                while (tokenLinea != NULL) { //Recorre todos los tokens
+                    if (contadorCampo == 1){  //Si el contador campo esta en la posiciòn 1, corresponde a la posiciòn de Nombre
+                        strcat(nuevaLinea,charValorCampo); //A la nueva linea se le concatena el nuevo valor del campo
+                        strcat(nuevaLinea, ",");  //Se agrega una coma para agregar el siguiente
                         contadorCampo++;
                     }
                     else{
                         if (contadorCampo == 4){
-                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea,tokenLinea); //Si se encuentra en la ultima posiciòn (Carrera) se concatena pero sin coma
                         }
                         else{
-                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea,tokenLinea); //Si se encuentra en cualquier otra posiciòn, se agrega el mismo valor y una coma
                             strcat(nuevaLinea, ",");
                             contadorCampo++; 
                         }
                     }
                     
-                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada);
+                    tokenLinea = strtok_r(NULL, ",", &restLineaEncontrada); //Recorre los tokens
                 }
                 fclose(archivo);
                 FILE *archivoNuevo = fopen("alumno.txt", "w");
@@ -393,29 +393,28 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
                     printf("Error al abrir el archivo\n");
                 }
                 else{
-                    fputs(bufferAntes, archivoNuevo);
-                    fputs(nuevaLinea, archivoNuevo);
-                    fputs(bufferDespues, archivoNuevo);
-                    strcpy(bufferRespuesta,"Campo actualizado correctamente");
+                    fputs(bufferAntes, archivoNuevo); //Escribe el contenido antes de encontrar el valor a cambiar
+                    fputs(nuevaLinea, archivoNuevo); //Escribe la nueva linea
+                    fputs(bufferDespues, archivoNuevo); //Escribe el contenido despuès de encontrar el valor a cambiar
+                    strcpy(bufferRespuesta,"Campo actualizado correctamente\n");
                 }
                 fclose(archivoNuevo);
 
             }
             else if(strcmp(charCampo, "Apellido") == 0){
-                printf("Coincidencia en %s", charCampo);
                 tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
                 while (tokenLinea != NULL) {
-                    if (contadorCampo == 2){
+                    if (contadorCampo == 2){ //Si el contador campo esta en la posiciòn 2, corresponde a la posiciòn de Apellido
                         strcat(nuevaLinea,charValorCampo);
                         strcat(nuevaLinea, ","); 
                         contadorCampo++;
                     }
                     else{
                         if (contadorCampo == 4){
-                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea,tokenLinea);//Si se encuentra en la ultima posiciòn (Carrera) se concatena pero sin coma
                         }
                         else{
-                            strcat(nuevaLinea,tokenLinea);
+                            strcat(nuevaLinea,tokenLinea);//Si se encuentra en cualquier otra posiciòn, se agrega el mismo valor y una coma
                             strcat(nuevaLinea, ",");
                             contadorCampo++; 
                         }
@@ -432,12 +431,11 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
                     fputs(bufferAntes, archivoNuevo);
                     fputs(nuevaLinea, archivoNuevo);
                     fputs(bufferDespues, archivoNuevo);
-                    strcpy(bufferRespuesta,"Campo actualizado correctamente");
+                    strcpy(bufferRespuesta,"Campo actualizado correctamente\n");
                 }
                 fclose(archivoNuevo);
             }
             else if(strcmp(charCampo, "Semestre") == 0 ){
-                printf("Coincidencia en %s", charCampo);
                 tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
                 while (tokenLinea != NULL) {
                     if (contadorCampo == 3){
@@ -467,12 +465,11 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
                     fputs(bufferAntes, archivoNuevo);
                     fputs(nuevaLinea, archivoNuevo);
                     fputs(bufferDespues, archivoNuevo);
-                    strcpy(bufferRespuesta,"Campo actualizado correctamente");
+                    strcpy(bufferRespuesta,"Campo actualizado correctamente\n");
                 }
                 fclose(archivoNuevo);
             }
             else if(strcmp(charCampo, "Carrera") == 0){
-                printf("Coincidencia en %s", charCampo);
                 tokenLinea = strtok_r(lineaEncontrada, ",", &restLineaEncontrada);
                 while (tokenLinea != NULL) {
                     if (contadorCampo == 4){
@@ -496,17 +493,17 @@ void funcionUpdate(char *campo, char *id, char *bufferRespuesta){
                     fputs(bufferAntes, archivoNuevo);
                     fputs(nuevaLinea, archivoNuevo);
                     fputs(bufferDespues, archivoNuevo);
-                    strcpy(bufferRespuesta,"Campo actualizado correctamente");
+                    strcpy(bufferRespuesta,"Campo actualizado correctamente\n");
                 }
                 fclose(archivoNuevo);
             }    
             else{
-                strcpy(bufferRespuesta,"No hay coincidencia en el campo a actualizar");
+                strcpy(bufferRespuesta,"No hay coincidencia en el campo a actualizar\n");
             }
 
         }
         else{
-            strcpy(bufferRespuesta, "Error. No hay coincidencias con el ID proporcionado");
+            strcpy(bufferRespuesta, "Error. No hay coincidencias con el ID proporcionado\n");
         }
     
     }
@@ -536,23 +533,20 @@ void funcionDelete(char *cadenaId, char *bufferRespuesta){
     }
     else{
 
-        while (fgets(linea, sizeof(linea), archivo)) {
+        while (fgets(linea, sizeof(linea), archivo)) { //Recorre el archivo por lineas en busca del Id a eliminar
             char copiaLinea[256];
-            strcpy(copiaLinea, linea); // No alterar la original    
-            char *token = strtok(copiaLinea, ",");
-            printf("token:%scharID:%s", token, charID);
-            if (strcmp(token, charID) != 0) {
-                strcat(buffer,linea);
+            strcpy(copiaLinea, linea);  
+            char *token = strtok(copiaLinea, ","); //Obtiene el primer token antes de una coma pues es la posiciòn del Id
+            if (strcmp(token, charID) != 0) { //Si el valor del token (Id) es diferente al identificador recibido 
+                strcat(buffer,linea); //Se escribe en el buffer esa linea, pues no debe ser eliminada
             }
             else{
-                encontrado = true;
+                encontrado = true; //Si es igual, se cambia la bandera a true y no se escribe nada en el buffer, simulando el delete
             }
         }
     }
 
     fclose(archivo);
-
-    printf("El nuevo contenido del archivo es: %s", buffer);
 
     FILE *archivoNuevo = fopen("alumno.txt", "w");
     if (archivo == NULL) {
@@ -560,13 +554,13 @@ void funcionDelete(char *cadenaId, char *bufferRespuesta){
     }
     else{
         if(encontrado){
-            fputs(buffer, archivoNuevo);
-            strcpy(bufferRespuesta, "Registro eliminado exitosamente");
-            fclose(archivoNuevo); 
+            fputs(buffer, archivoNuevo); //Escribe todo el nuevo contenido en un archivo
+            strcpy(bufferRespuesta, "Registro eliminado exitosamente\n");
+            fclose(archivoNuevo);  
         }
         else{
-            fputs(buffer, archivoNuevo);
-            strcpy(bufferRespuesta, "Error. No se encontro el registro indicado");
+            fputs(buffer, archivoNuevo); //Escribe el mismo contenido en un archivo
+            strcpy(bufferRespuesta, "Error. No se encontro el registro indicado\n");
             fclose(archivoNuevo); 
         }
        
